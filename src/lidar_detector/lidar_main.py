@@ -96,7 +96,7 @@ class ObstacleDetector:
 # 遍历文件夹中的所有pc
 if __name__ == '__main__':
     detector = ObstacleDetector()
-    folder_path = './PCD'
+    folder_path = 'C:\\Users\\yuqing\\Desktop\\MECENG 292B\\Final Project\\Statistics-and-Data-Science-SDSE23-\\src\\lidar_detector\\PCD'
     for filename in os.listdir(folder_path):
         if filename.endswith(".pcd"):
             file_path = os.path.join(folder_path, filename)
