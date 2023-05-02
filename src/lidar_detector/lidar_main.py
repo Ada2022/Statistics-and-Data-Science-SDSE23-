@@ -62,41 +62,27 @@ class ObstacleDetector:
         for cluster in clusters:
             # 获得聚类的点云
             points = np.asarray(cluster.points)
-            # 计算点云的中心点
-            center = points.mean(axis=0)
-            # 计算点云的协方差矩阵
-            cov = np.cov(points.T)
-            # 使用特征值分解求解长方体的3个半轴的长度和方向
-            eigenvalues, eigenvectors = np.linalg.eig(cov)
-            # 对特征值进行排序，从大到小排序
-            sorted_idx = eigenvalues.argsort()[::-1]
-            eigenvalues = eigenvalues[sorted_idx]
-            eigenvectors = eigenvectors[:, sorted_idx]
-            # 长方体的3个半轴的长度
-            length = np.sqrt(eigenvalues) * 2
-            # 长方体的3个半轴的方向
-            direction = eigenvectors
-            # 计算长方体的8个顶点坐标
-            corner_points = []
-            for i in range(2):
-                for j in range(2):
-                    for k in range(2):
-                        x = center[0] + length[0]/2 * (-1)**i
-                        y = center[1] + length[1]/2 * (-1)**j
-                        z = center[2] + length[2]/2 * (-1)**k
-                        point = np.array([x, y, z])
-                        corner_points.append(point)
+            # 获取外接长方体的八个顶点坐标
+            bbox = o3d.geometry.AxisAlignedBoundingBox.create_from_points(cluster.points)
+            corners = bbox.get_box_points()
             # 输出长方体的8个顶点坐标
             print("Bounding box corner points:")
-            for i, point in enumerate(corner_points):
+            for i, point in enumerate(corners):
                 print(f"Corner {i+1}: ({point[0]:.2f}, {point[1]:.2f}, {point[2]:.2f})")
             print("")
+            
 
-
-# 遍历文件夹中的所有pc
+# 遍历文件夹中的所有pcd
 if __name__ == '__main__':
     detector = ObstacleDetector()
     folder_path = './PCD'
+    
+    vis = o3d.visualization.Visualizer()
+    #创建播放窗口
+    vis.create_window()
+    pointcloud = o3d.geometry.PointCloud()
+    to_reset = True
+    vis.add_geometry(pointcloud)
     for filename in os.listdir(folder_path):
         if filename.endswith(".pcd"):
             file_path = os.path.join(folder_path, filename)
@@ -105,11 +91,15 @@ if __name__ == '__main__':
             # 输出八个顶点
             clusters = detector.process_cloud(pcd)
             for cluster in clusters:
-                detector.create_bounding_box([cluster])  # 调用 create_bounding_box() 方法
+                detector.create_bounding_box([cluster])  # 调用 create_bounding_box()
+            
             # 可视化
-            colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0], [0, 0.5, 0.5], [0.5, 0, 0.5]]
-            for i in range(len(clusters)):
-                cluster = clusters[i]
-                color = colors[i % len(colors)]
-                cluster.paint_uniform_color(color)
-            o3d.visualization.draw_geometries(clusters)
+            pcd = np.asarray(pcd.points).reshape((-1, 3))
+            pointcloud.points = o3d.utility.Vector3dVector(pcd)  # 如果使用numpy数组可省略上两行
+            vis.update_geometry()
+            if to_reset:
+                vis.reset_view_point(True)
+                to_reset = False
+            vis.poll_events()
+            vis.update_renderer()
+
