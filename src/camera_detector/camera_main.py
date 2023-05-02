@@ -16,6 +16,7 @@ from camera_detector.models.yolo import build_model
 class Detector2D:
     def __init__(self) -> None:
         self.person_bboxes = []
+        self.img = None
 
     def parse_args(self):
         parser = argparse.ArgumentParser(description='YOLO Demo Detection')
@@ -107,9 +108,10 @@ class Detector2D:
 
             while(True):
                 ret, frame = video.read()
-                
+
                 if ret:
                     # ------------------------- Detection ---------------------------
+                    self.img  = frame
                     img_h, img_w = frame.shape[:2]
                     size = np.array([[img_w, img_h, img_w, img_h]])
                     # prepare
