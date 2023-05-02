@@ -1,20 +1,24 @@
 import open3d as o3d
 import numpy as np
 import os
+import sys
+sys.path.append('./lidar_detector')
+
 
 # 设置参数
 VOXEL_GRID_SIZE = 0.05
 ROI_MIN_POINT = np.array([-10, -10, -2])
 ROI_MAX_POINT = np.array([10, 10, 2])
-GROUND_THRESH = 0.2
+GROUND_THRESH = 0.1
 CLUSTER_THRESH = 0.5
 CLUSTER_MIN_SIZE = 10
 CLUSTER_MAX_SIZE = 10000
 
 # 定义障碍物检测类
-class ObstacleDetector:
+class Detector3D:
     def __init__(self):
-        self.labels = []
+        self.results = []
+        self.folder_path = 'lidar_detector/PCD'
     
     def downsample(self, pcd, voxel_size):
         downpcd = pcd.voxel_down_sample(voxel_size)
@@ -30,7 +34,7 @@ class ObstacleDetector:
         [a, b, c, d] = plane_model
         if d < 0:
             a, b, c, d = -a, -b, -c, -d
-        print(f"Model: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
+        # print(f"Model: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
         inlier_cloud = pcd.select_by_index(inliers)
         outlier_cloud = pcd.select_by_index(inliers, invert=True)
         return inlier_cloud, outlier_cloud
@@ -40,7 +44,7 @@ class ObstacleDetector:
             labels = np.array(
                 pcd.cluster_dbscan(eps=cluster_threshold, min_points=min_size, print_progress=False))
         max_label = labels.max()
-        print(f"point cloud has {max_label + 1} clusters")
+        # print(f"point cloud has {max_label + 1} clusters")
         clusters = []
         for i in range(max_label + 1):
             cluster = pcd.select_by_index(np.where(labels == i)[0])
@@ -87,29 +91,26 @@ class ObstacleDetector:
                         point = np.array([x, y, z])
                         corner_points.append(point)
             # 输出长方体的8个顶点坐标
-            print("Bounding box corner points:")
-            for i, point in enumerate(corner_points):
-                print(f"Corner {i+1}: ({point[0]:.2f}, {point[1]:.2f}, {point[2]:.2f})")
-            print("")
+            # print("Bounding box corner points:")
+            # for i, point in enumerate(corner_points):
+                # print(f"Corner {i+1}: ({point[0]:.2f}, {point[1]:.2f}, {point[2]:.2f})")
+            # print("")
 
+            self.results.append(corner_points)
 
-# 遍历文件夹中的所有pc
-if __name__ == '__main__':
-    detector = ObstacleDetector()
-    folder_path = './PCD'
-    for filename in os.listdir(folder_path):
-        if filename.endswith(".pcd"):
-            file_path = os.path.join(folder_path, filename)
-            print(f"Processing file {file_path}")
-            pcd = o3d.io.read_point_cloud(file_path)
-            # 输出八个顶点
-            clusters = detector.process_cloud(pcd)
-            for cluster in clusters:
-                detector.create_bounding_box([cluster])  # 调用 create_bounding_box() 方法
-            # 可视化
-            colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0], [0, 0.5, 0.5], [0.5, 0, 0.5]]
-            for i in range(len(clusters)):
-                cluster = clusters[i]
-                color = colors[i % len(colors)]
-                cluster.paint_uniform_color(color)
-            o3d.visualization.draw_geometries(clusters)
+    def run(self):
+            for filename in os.listdir(self.folder_path):
+                if filename.endswith(".pcd"):
+                    self.results = []
+                    file_path = os.path.join(self.folder_path, filename)
+                    print(f"Processing file {file_path}")
+                    pcd = o3d.io.read_point_cloud(file_path)
+                    clusters = self.process_cloud(pcd)
+                    for cluster in clusters:
+                        self.create_bounding_box([cluster])
+                    colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0], [0, 0.5, 0.5], [0.5, 0, 0.5]]
+                    for i in range(len(clusters)):
+                        cluster = clusters[i]
+                        color = colors[i % len(colors)]
+                        cluster.paint_uniform_color(color)
+                    o3d.visualization.draw_geometries(clusters)

@@ -1,7 +1,9 @@
 import threading
 import time
+import cv2
+import matplotlib.pyplot as plt
 from camera_detector.camera_main import Detector2D
-# from lidar_detector.lidar_main import Detector3D
+from lidar_detector.lidar_main import Detector3D
 # from sensor_fusion.fusion_main import Matcher
 
 def detect_and_update(detector):
@@ -19,9 +21,9 @@ def main():
     thread_camera.start()
 
     # Create a thread for camera detector
-    # detector_3d = Detector3D()
-    # thread_lidar = threading.Thread(target=detect_and_update, args=(detector_3d,))
-    # thread_lidar.start()
+    detector_3d = Detector3D()
+    thread_lidar = threading.Thread(target=detect_and_update, args=(detector_3d,))
+    thread_lidar.start()
 
     # Wait to initialize model
     time.sleep(0.3)
@@ -30,17 +32,20 @@ def main():
     # matcher = Matcher()
 
     # Start sensor fusion
-    while thread_camera.is_alive():
+    while thread_camera.is_alive() and thread_lidar.is_alive():
         # request camera result
         camera_result = detector_2d.person_bboxes
-        print(camera_result)
 
         # request lidar result
-        # lidar_result = ...
-        # print(lidar_result)
+        lidar_result = detector_3d.results
 
-        # sensor fusion 
-        # matcher.run(camera_result, lidar_result)
+        if camera_result and lidar_result:
+            print('camera result is:', camera_result)
+            print('lidar result is:', lidar_result)
+
+
+            # sensor fusion 
+            # matcher.run(camera_result, lidar_result)
 
         # Wait for some time before the next update
         time.sleep(0.005)
