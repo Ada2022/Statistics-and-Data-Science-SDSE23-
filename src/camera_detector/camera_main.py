@@ -16,7 +16,6 @@ from camera_detector.models.yolo import build_model
 class Detector2D:
     def __init__(self) -> None:
         self.person_bboxes = []
-        self.img = None
 
     def parse_args(self):
         parser = argparse.ArgumentParser(description='YOLO Demo Detection')

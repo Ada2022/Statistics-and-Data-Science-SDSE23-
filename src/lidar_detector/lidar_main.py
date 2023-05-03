@@ -2,6 +2,7 @@ import open3d as o3d
 import numpy as np
 import os
 import sys
+import time
 sys.path.append('./lidar_detector')
 
 
@@ -19,6 +20,8 @@ class Detector3D:
     def __init__(self):
         self.results = []
         self.folder_path = 'lidar_detector/PCD'
+        self.vis = o3d.visualization.Visualizer()
+
     
     def downsample(self, pcd, voxel_size):
         downpcd = pcd.voxel_down_sample(voxel_size)
@@ -81,6 +84,7 @@ class Detector3D:
             for filename in os.listdir(self.folder_path):
                 if filename.endswith(".pcd"):
                     self.results = []
+                    self.vis.create_window()
                     file_path = os.path.join(self.folder_path, filename)
                     print(f"Processing file {file_path}")
                     pcd = o3d.io.read_point_cloud(file_path)
@@ -92,4 +96,34 @@ class Detector3D:
                         cluster = clusters[i]
                         color = colors[i % len(colors)]
                         cluster.paint_uniform_color(color)
-                    o3d.visualization.draw_geometries(clusters)
+                        self.vis.add_geometry(cluster)
+                    self.vis.run()
+                    self.vis.clear_geometries()
+                    # o3d.visualization.draw_geometries(clusters)
+                    # time.sleep(0.1)
+                    # o3d.visualization.destroy_window()
+
+
+
+
+
+# 遍历文件夹中的所有pc
+# if __name__ == '__main__':
+#     detector = Detector3D()
+#     folder_path = './PCD'
+#     for filename in os.listdir(folder_path):
+#         if filename.endswith(".pcd"):
+#             file_path = os.path.join(folder_path, filename)
+#             print(f"Processing file {file_path}")
+#             pcd = o3d.io.read_point_cloud(file_path)
+#             # 输出八个顶点
+#             clusters = detector.process_cloud(pcd)
+#             for cluster in clusters:
+#                 detector.create_bounding_box([cluster])  # 调用 create_bounding_box() 方法
+#             # 可视化
+#             colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0], [0, 0.5, 0.5], [0.5, 0, 0.5]]
+#             for i in range(len(clusters)):
+#                 cluster = clusters[i]
+#                 color = colors[i % len(colors)]
+#                 cluster.paint_uniform_color(color)
+#             o3d.visualization.draw_geometries(clusters)

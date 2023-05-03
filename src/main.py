@@ -1,7 +1,6 @@
 import threading
 import time
-import cv2
-import matplotlib.pyplot as plt
+import numpy as np
 from camera_detector.camera_main import Detector2D
 from lidar_detector.lidar_main import Detector3D
 # from sensor_fusion.fusion_main import Matcher
@@ -28,8 +27,6 @@ def main():
     # Wait to initialize model
     time.sleep(0.3)
 
-    # Initialize matcher
-    # matcher = Matcher()
 
     # Start sensor fusion
     while thread_camera.is_alive() and thread_lidar.is_alive():
@@ -43,8 +40,12 @@ def main():
             print('camera result is:', camera_result)
             print('lidar result is:', lidar_result)
 
-
-            # sensor fusion 
+            # lidar_results_transform = np.array([[ 9.99635086e-01,  2.69526266e-02, -1.80319433e-03, -6.48575600e-02],
+            #                                 [-2.70109374e-02,  9.98133934e-01, -5.47636676e-02, -5.68320100e-02],
+            #                                 [ 3.23804765e-04,  5.47923895e-02,  9.98497716e-01, -1.04481150e-01],
+            #                                 [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00, 1.00000000e+00]])
+            # # sensor fusion 
+            # matcher = Matcher(camera_result, lidar_result, lidar_results_transform, camera_intrinsic_parameters)
             # matcher.run(camera_result, lidar_result)
 
         # Wait for some time before the next update
