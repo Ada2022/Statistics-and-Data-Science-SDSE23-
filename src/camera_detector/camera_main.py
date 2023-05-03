@@ -12,6 +12,8 @@ from camera_detector.data.coco import coco_class_labels, coco_class_index
 from camera_detector.data.transforms import ValTransforms
 from camera_detector.models.yolo import build_model
 
+import open3d as o3d
+o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Warning)
 
 class Detector2D:
     def __init__(self) -> None:
@@ -121,7 +123,6 @@ class Detector2D:
                     bboxes, scores, cls_inds = net(x)
                     
                     t1 = time.time()
-                    # print("detection time used ", t1-t0, "s")
 
                     # rescale
                     bboxes -= offset
@@ -132,8 +133,6 @@ class Detector2D:
                     for i, bbox in enumerate(bboxes):
                             if coco_class_index[int(cls_inds[i])] == 1:
                                 self.person_bboxes.append(bbox)
-
-                    # print('person bboxes are:', self.person_bboxes)
                     
                     frame_processed = self.visualize(img=frame, 
                                                 bboxes=bboxes,
