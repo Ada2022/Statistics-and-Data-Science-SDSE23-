@@ -12,8 +12,8 @@ ROI_MIN_POINT = np.array([-10, -10, -2])
 ROI_MAX_POINT = np.array([10, 10, 2])
 GROUND_THRESH = 0.1
 CLUSTER_THRESH = 0.5
-CLUSTER_MIN_SIZE = 10
-CLUSTER_MAX_SIZE = 10000
+CLUSTER_MIN_SIZE = 30
+CLUSTER_MAX_SIZE = 1000
 
 # 定义障碍物检测类
 class Detector3D:
@@ -102,27 +102,32 @@ class Detector3D:
             self.results.append(corner_points)
 
     def run(self):
-            for filename in os.listdir(self.folder_path):
-                if filename.endswith(".pcd"):
-                    self.results = []
-                    self.vis.create_window()
-                    file_path = os.path.join(self.folder_path, filename)
-                    print(f"Processing file {file_path}")
-                    pcd = o3d.io.read_point_cloud(file_path)
-                    clusters = self.process_cloud(pcd)
-                    for cluster in clusters:
-                        self.create_bounding_box([cluster])
-                    colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0], [0, 0.5, 0.5], [0.5, 0, 0.5]]
-                    for i in range(len(clusters)):
-                        cluster = clusters[i]
-                        color = colors[i % len(colors)]
-                        cluster.paint_uniform_color(color)
-                        self.vis.add_geometry(cluster)
-                    self.vis.run()
-                    self.vis.clear_geometries()
-                    # o3d.visualization.draw_geometries(clusters)
-                    # time.sleep(0.1)
-                    # o3d.visualization.destroy_window()
+        # 获取文件夹中所有 ".pcd" 文件的文件名并按照文件名排序
+        dir_path = self.folder_path
+        pcd_files = sorted([filename for filename in os.listdir(dir_path) if filename.endswith('.pcd')])
+
+        # 循环读取文件
+        for filename in pcd_files:
+            self.results = []
+            self.vis.create_window()
+            self.vis.close()
+            file_path = os.path.join(self.folder_path, filename)
+            print(f"Processing file {file_path}")
+            pcd = o3d.io.read_point_cloud(file_path)
+            clusters = self.process_cloud(pcd)
+            for cluster in clusters:
+                self.create_bounding_box([cluster])
+            colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0], [0, 0.5, 0.5], [0.5, 0, 0.5]]
+            for i in range(len(clusters)):
+                cluster = clusters[i]
+                color = colors[i % len(colors)]
+                cluster.paint_uniform_color(color)
+                self.vis.add_geometry(cluster)
+            view_control = self.vis.get_view_control()
+            view_control.set_front([0.0, 1.0, 0.0])
+            view_control.set_up([0.0, 0.0, 1.0]) 
+            self.vis.run()
+            self.vis.clear_geometries()
 
 
 
