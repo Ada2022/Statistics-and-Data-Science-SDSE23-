@@ -2,7 +2,6 @@ import open3d as o3d
 import numpy as np
 import os
 import sys
-import time
 
 sys.path.append('./lidar_detector')
 o3d.utility.set_verbosity_level(o3d.utility.VerbosityLevel.Warning)
@@ -71,28 +70,6 @@ class Detector3D:
 
             self.results.append(corner_points)
 
-<<<<<<< HEAD
-# 遍历文件夹中的所有pc
-if __name__ == '__main__':
-    detector = ObstacleDetector()
-    folder_path = 'C:\\Users\\yuqing\\Desktop\\MECENG 292B\\Final Project\\Statistics-and-Data-Science-SDSE23-\\src\\lidar_detector\\PCD'
-    for filename in os.listdir(folder_path):
-        if filename.endswith(".pcd"):
-            file_path = os.path.join(folder_path, filename)
-            print(f"Processing file {file_path}")
-            pcd = o3d.io.read_point_cloud(file_path)
-            # 输出八个顶点
-            clusters = detector.process_cloud(pcd)
-            for cluster in clusters:
-                detector.create_bounding_box([cluster])  # 调用 create_bounding_box() 方法
-            # 可视化
-            colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0], [0, 0.5, 0.5], [0.5, 0, 0.5]]
-            for i in range(len(clusters)):
-                cluster = clusters[i]
-                color = colors[i % len(colors)]
-                cluster.paint_uniform_color(color)
-            o3d.visualization.draw_geometries(clusters)
-=======
     def run(self):
         # Sort them by filename
         dir_path = self.folder_path
