@@ -1,5 +1,5 @@
 numpy==1.19.5
-open3d==0.15.2
+open3d==0.15.1
 opencv_python==4.6.0.66
 pycocotools==2.0.6
 scipy==1.5.4
